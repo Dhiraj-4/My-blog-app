@@ -8,6 +8,7 @@ const app = new express();
 
 app.use(morgan('combined'));
 app.use(express.json());
+app.use(express.urlencoded());
 
 app.get('/', (req,res) => {
     console.log('You are on the home page');

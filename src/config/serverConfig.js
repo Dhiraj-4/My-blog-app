@@ -17,3 +17,15 @@ export const MONGO_URL = process.env.MONGO_URL;
 export const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 export const JWT_REFRESH_SECRET_KEY = process.env.JWT_REFRESH_SECRET_KEY;
+
+export const MY_MAIL = process.env.MY_MAIL;
+
+export const APP_PASSWORD = process.env.APP_PASSWORD;
+
+export const JWT_OTP_KEY = process.env.JWT_OTP_KEY;
+
+export const JWT_EMAIL_KEY = process.env.JWT_EMAIL_KEY;
+
+export const JWT_UPDATE_KEY = process.env.JWT_UPDATE_KEY;
+
+export const JWT_DELETE_KEY = process.env.JWT_DELETE_KEY;

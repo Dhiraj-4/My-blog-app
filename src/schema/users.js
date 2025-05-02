@@ -14,6 +14,14 @@ const usersSchema = mongoose.Schema({
     profileImg: {
         type: String,
         default: null
+    },
+    otp: {
+        type: String,
+        default: null
+    },
+    expiresAt: {
+        type: String,
+        default: null
     }
 }, { timestamps: true });
 
