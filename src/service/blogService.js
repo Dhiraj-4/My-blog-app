@@ -6,23 +6,21 @@ import {
     getUsersBlogs as getUsersBlogsRepository,
     saveCoverImage as saveCoverImageRepository,
     deleteBlogById as deleteBlogByIdRepository,
-    deleteCoverImage as deleteCoverImageRepository
+    deleteCoverImage as deleteCoverImageRepository,
+    toggleReaction as toggleReactionRepository
 } from '../repository/blogRepository.js';
-import { Filter } from "bad-words";
+import { checkProfanity } from '../utils/blogProfanity.js';
 
-export const createBlog = async ({ title, content, authorName, author }) => {
-
-    const filter = new Filter();
-
-    const cleanTitle = filter.clean(title);
-    const cleanContent = filter.clean(content);
-    const cleanAuthor = filter.clean(authorName);
+export const createBlog = async ({ title, content, authorName, author, tags }) => {
+    
+    const {cleanContent, newTags} = checkProfanity({ title, content, authorName, tags });
 
     const blog = await createBlogRepository({
-        title: cleanTitle, 
+        title,
         content: cleanContent,  
         author,
-        authorName: cleanAuthor 
+        authorName,
+        tags: newTags
     });
 
     return blog;
@@ -53,20 +51,17 @@ export const getBlogById = async (blogId) => {
     return blog;
 }
 
-export const updateBlogById = async ({ blogId, title, content, authorName, authorId }) => {
+export const updateBlogById = async ({ blogId, title, content, authorName, authorId, tags }) => {
 
-    const filter = new Filter();
-
-    const cleanTitle = filter.clean(title);
-    const cleanContent = filter.clean(content);
-    const cleanAuthor = filter.clean(authorName);
+    const {cleanContent, newTags} = checkProfanity({ title, content, authorName, tags });
 
     const blog = await updateBlogByIdRepository({ 
         blogId, 
-        title: cleanTitle, 
+        title, 
         content: cleanContent, 
-        authorName: cleanAuthor,
-        authorId
+        authorName,
+        authorId,
+        tags: newTags
     });
 
     return blog;
@@ -75,4 +70,9 @@ export const updateBlogById = async ({ blogId, title, content, authorName, autho
 export const getUsersBlogs = async ({ userId }) => {
     const blogs = await getUsersBlogsRepository({ userId });
     return blogs;
+}
+
+export const toggleReaction = async ({ userId, blogId, action }) => {
+    const blog = await toggleReactionRepository({ userId, blogId, action });
+    return blog;
 }

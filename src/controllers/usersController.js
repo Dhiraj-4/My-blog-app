@@ -14,16 +14,18 @@ import {
     updateUser as updateUserService,
     deleteLogin as deleteLoginService,
     deleteUser as deleteUserService,
-    delProfileImg as delProfileImgService
+    delProfileImg as delProfileImgService,
+    toggleFollow as toggleFollowService
 } from '../service/usersService.js';
 import { errorResponse, successResponse } from '../utils/response.js';
 
 export const createUser = async (req, res) => {
     try {
         const response = await createUserService({
-            email: req.body.email,
-            password: req.body.password,
-            userEmail: req.user.email
+            email: req.body.email.trim().toLowerCase(),
+            password: req.body.password.trim(),
+            userEmail: req.user.email,
+            userName: req.body.userName.trim().toLowerCase()
         });
 
         return successResponse({
@@ -42,8 +44,8 @@ export const createUser = async (req, res) => {
 export const loginUser = async (req, res) => {
     try {
         const { accessToken, refreshToken } = await loginUserService({
-            email: req.body.email,
-            password: req.body.password
+            email: req.body.email.trim().toLowerCase(),
+            password: req.body.password.trim()
         });
 
         res.cookie('refreshToken', refreshToken, {
@@ -100,7 +102,7 @@ export const getUserById = async (req, res) => {
 export const forgetPassword = async (req, res) => {
     try {
         const user = await forgetPasswordService({
-            email: req.body.email
+            email: req.body.email.trim().toLowerCase()
         });
 
         return successResponse({
@@ -118,8 +120,8 @@ export const forgetPassword = async (req, res) => {
 export const otpVerification = async (req, res) => {
     try {
         const { updatedUser, otpAccessToken } = await otpVerificationService({
-            email: req.body.email,
-            otp: req.body.otp
+            email: req.body.email.trim().toLowerCase(),
+            otp: req.body.otp.trim()
         });
 
         return successResponse({
@@ -137,7 +139,7 @@ export const otpVerification = async (req, res) => {
 export const resetPassword = async (req, res) => {
     try {
         const user = await resetPasswordService({
-            newPassword: req.body.newPassword,
+            newPassword: req.body.newPassword.trim(),
             userId: req.user.userId
         });
 
@@ -155,7 +157,7 @@ export const resetPassword = async (req, res) => {
 
 export const verifyEmail = async (req, res) => {
     try {
-        const emailDb = await verifyEmailService({ email: req.body.email });
+        const emailDb = await verifyEmailService({ email: req.body.email.trim().toLowerCase() });
 
         return successResponse({
             message: 'Otp sent successfully',
@@ -172,8 +174,8 @@ export const verifyEmail = async (req, res) => {
 export const emailVerifyOtp = async (req, res) => {
     try {
         const { delEmailDb, emailAccessToken } = await emailVerifyOtpService({
-            email: req.body.email,
-            otp: req.body.otp
+            email: req.body.email.trim().toLowerCase(),
+            otp: req.body.otp.trim()
         });
 
         return successResponse({
@@ -228,8 +230,8 @@ export const saveProfileImg = async (req, res) => {
 export const updateLogin = async (req, res) => {
     try {
         const updateAccessToken = await updateLoginService({
-            email: req.body.email,
-            password: req.body.password
+            email: req.body.email.trim().toLowerCase(),
+            password: req.body.password.trim()
         });
 
         return successResponse({
@@ -247,8 +249,9 @@ export const updateLogin = async (req, res) => {
 export const updateUser = async (req, res) => {
     try {
         const user = await updateUserService({
-            newEmail: req.body.newEmail,
-            newPassword: req.body.newPassword,
+            newEmail: req.body.newEmail.trim().toLowerCase(),
+            newPassword: req.body.newPassword.trim(),
+            newUserName: req.body.newUserName.trim().toLowerCase(),
             userId: req.user.userId
         });
 
@@ -267,8 +270,8 @@ export const updateUser = async (req, res) => {
 export const deleteLogin = async (req, res) => {
     try {
         const deleteToken = await deleteLoginService({
-            email: req.body.email,
-            password: req.body.password
+            email: req.body.email.trim().toLowerCase(),
+            password: req.body.password.trim()
         });
 
         return successResponse({
@@ -313,6 +316,25 @@ export const delProfileImg = async (req, res) => {
             status: 200,
             res: res,
             data: user
+        });
+    } catch (error) {
+        return errorResponse({ error, res });
+    }
+}
+
+export const toggleFollow = async(req, res) => {
+    try {
+        const followList = await toggleFollowService({
+            userId: req.user.userId,
+            followUserId: req.params.id
+        });
+
+        return successResponse({
+            message: 'Toggled follow successfully',
+            success: true,
+            status: 200,
+            res: res,
+            data: { followList }
         });
     } catch (error) {
         return errorResponse({ error, res });

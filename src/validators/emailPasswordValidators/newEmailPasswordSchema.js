@@ -26,7 +26,8 @@ const createRegisterSchema = ({
 
   return z.object({
     newEmail: z.string().email({ message: 'Invalid email address' }),
-    newPassword: passwordSchema
+    newPassword: passwordSchema,
+    newUserName: z.string().min(3).max(40)
   });
 };
 

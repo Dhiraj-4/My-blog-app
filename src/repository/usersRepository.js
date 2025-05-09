@@ -19,21 +19,22 @@ import { transporter } from "../config/mailerconfig.js";
 import { emailVerification } from './../schema/emailVerification.js';
 import { Blog } from './../schema/blog.js';
 
-export const createUser = async ({ email, password, userEmail }) => {
+export const createUser = async ({ email, password, userEmail, userName }) => {
     try {
         if(userEmail !== email) {
             throw {
-                message: "Can't sign up without email verification",
+                message: "Username contains inappropriate word(s).",
                 success: false,
                 status: 403
             }
         }
         const hashPassword = await bcrypt.hash(password, 12);
-        const response = await Users.create({ email, password: hashPassword });
+        const response = await Users.create({ email: userEmail , password: hashPassword, userName});
 
         const updateResponse = {
             _id: response._id,
             email: response.email,
+            userName: response.userName,
             profileImg: response.profileImg
         }
         return updateResponse;
@@ -77,6 +78,7 @@ export const loginUser = async ({ email, password }) => {
             {
                 userId: user._id,
                 email: user.email,
+                userName: user.userName,
                 profileImg: user.profileImg
             },
             JWT_SECRET_KEY,
@@ -87,6 +89,7 @@ export const loginUser = async ({ email, password }) => {
             {
                 userId: user._id,
                 email: user.email,
+                userName: user.userName,
                 profileImg: user.profileImg
             },
             JWT_REFRESH_SECRET_KEY,
@@ -106,6 +109,7 @@ export const getAllUsers = async () => {
         const updatedUsers = users.map(e => ({
             _id: e._id,
             email: e.email,
+            userName: e.userName,
             profileImg: e.profileImg
         }));
         return updatedUsers;
@@ -128,6 +132,7 @@ export const getUserById = async (userId) => {
         const updatedUser = {
             _id: user._id,
             email: user.email,
+            userName: user.userName,
             profileImg: user.profileImg
         }
         return updatedUser;
@@ -201,6 +206,7 @@ export const forgetPassword = async({ email }) => {
         const updatedUser = {
             _id: newUser._id,
             email: newUser.email,
+            userName: newUser.userName,
             profileImg: newUser.profileImg
         }
         //return => OTP send successfully
@@ -267,6 +273,7 @@ export const otpVerification = async ({ otp, email }) => {
         const newUser = {
             _id: updatedUser._id,
             email: updatedUser.email,
+            userName: updatedUser.userName,
             profileImg: updatedUser.profileImg
         }
         return { otpAccessToken, newUser };
@@ -284,6 +291,7 @@ export const resetPassword = async ({ newPassword, userId }) => {
         const newUser = {
             _id: user._id,
             email: user.email,
+            userName: user.userName,
             profileImg: user.profileImg
         }
         return newUser;
@@ -331,7 +339,7 @@ export const verifyEmail = async ({ email }) => {
             `
         };
         
-        const info = await transporter.sendMail(mailOptions);
+        await transporter.sendMail(mailOptions);
 
         //store hashOtp, email and expiresAt in db for verifying otp later
         if(existingEmailDb) {
@@ -494,13 +502,18 @@ export const updateLogin = async ({ email, password }) => {
     }
 }
 
-export const updateUser = async ({ newEmail, newPassword, userId }) => {
+export const updateUser = async ({ newEmail, newPassword, userId, newUserName }) => {
     try {
         const hashPassword = await bcrypt.hash(newPassword, 12);
-        const user = await Users.findByIdAndUpdate(userId, { email: newEmail, password: hashPassword }, { new: true });
+        const user = await Users.findByIdAndUpdate(userId, { 
+            email: newEmail, 
+            password: hashPassword, 
+            userName: newUserName 
+        }, { new: true });
         const newUser = {
             _id: user._id,
             email: user.email,
+            userName: user.userName,
             profileImg: user.profileImg
         }
         return newUser;
@@ -650,6 +663,7 @@ export const delProfileImg = async ({ userId }) => {
             const newUser = {
                 _id: updatedUser._id,
                 email: updatedUser.email,
+                userName: updatedUser.userName,
                 profileImg: updatedUser.profileImg
             }
             return newUser;
@@ -666,3 +680,32 @@ export const delProfileImg = async ({ userId }) => {
         throw error;
     }
 };
+
+export const toggleFollow = async({ userId, followUserId }) => {
+    try {
+        const user = await Users.findById(userId);
+        const followUser = await Users.findById(followUserId);
+
+        if(!user || !followUser) {
+            throw {
+                message: 'User not found',
+                success: false,
+                status: 404
+            }
+        }
+
+        const hasFollowed = user.following.includes(followUserId);
+
+        if(hasFollowed) {
+            user.following.pull(followUserId);
+        } else {
+            user.following.push(followUserId);
+        }
+
+        await user.save();
+        return user.following;
+    } catch (error) {
+        console.log('This error is from toggleFollow: ', error);
+        throw error;
+    }
+}

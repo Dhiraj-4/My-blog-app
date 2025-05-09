@@ -6,7 +6,8 @@ import {
     getUsersBlogs as getUsersBlogsService,
     deleteBlogById as deleteBlogByIdService,
     saveCoverImage as saveCoverImageService,
-    deleteCoverImage as deleteCoverImageService
+    deleteCoverImage as deleteCoverImageService,
+    toggleReaction as toggleReactionService
 } from '../service/blogService.js'
 import { errorResponse, successResponse } from "../utils/response.js";
 
@@ -17,7 +18,8 @@ export const createBlog = async (req, res) => {
             title: req.body.title,
             content: req.body.content,
             author: req.user.userId,
-            authorName: req.body.authorName
+            authorName: req.body.authorName.trim(),
+            tags: req.body.tags
         });
 
         return successResponse({
@@ -72,7 +74,8 @@ export const updateBlogById = async (req, res) => {
             content: req.body.content,
             blogId: req.params.id,
             authorName: req.body.authorName,
-            authorId: req.user.userId
+            authorId: req.user.userId,
+            tags: req.body.tags
         });
 
         return successResponse({
@@ -154,6 +157,26 @@ export const deleteCoverImage = async (req, res) => {
             success: true,
             status: 200,
             res: res,
+            data: blog
+        });
+    } catch (error) {
+        return errorResponse({ error, res });
+    }
+}
+
+export const toggleReaction = async(req, res) => {
+    try {
+        const blog = await toggleReactionService({
+            userId: req.user.userId,
+            blogId: req.params.id,
+            action: req.body.action
+        });
+
+        return successResponse({
+            message: 'Toggled reaction successfully',
+            success: true,
+            res: res,
+            status: 200,
             data: blog
         });
     } catch (error) {

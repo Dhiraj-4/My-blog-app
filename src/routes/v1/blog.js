@@ -3,12 +3,14 @@ import { accessTokenValidator } from '../../validators/tokenValidators/accessTok
 import { blogZodSchema } from '../../validators/blogValidators/blogZodSchema.js';
 import { zodBlogValidator } from '../../validators/blogValidators/zodBlogValidator.js';
 import { createBlog, deleteBlogById, deleteCoverImage, getAllBlogs, getBlogById,
-     getUsersBlogs, saveCoverImage, updateBlogById, 
+     getUsersBlogs, saveCoverImage, toggleReaction, updateBlogById, 
 } from '../../controllers/blogController.js';
 import { mongoIdValidator } from '../../validators/mongoIdvalidator/mongoIdValidator.js';
 import { fileTypeValidator } from '../../validators/fileTypeValidator.js';
 import { preSignedUrl } from '../../controllers/usersController.js';
 import { isFileUrlValid } from '../../validators/isFileUrlValid.js';
+import { commentValidator } from './../../validators/commentValidator/commentValidator.js';
+import { createComment, createReply, deleteComment, getComments, getReplies, updateComment } from './../../controllers/commentController.js';
 
 const router = express.Router();
 
@@ -63,7 +65,7 @@ router.delete(
 );
 
 //expects blogId and accessToken(for access and to verify author),
-// title, authorName and content, updates the blog with given details, cleared
+// title, authorName,tags and content, updates the blog with given details, cleared
 router.put(
     '/:id', 
     accessTokenValidator, 
@@ -73,12 +75,83 @@ router.put(
 );
 
 //expects accessToken(for access and author),
-// title, authorName and content, creates blog with given details, cleared
+// title, authorName, tags and content, creates blog with given details, cleared
 router.post(
     '/', 
     accessTokenValidator,  
     zodBlogValidator(blogZodSchema),
     createBlog
+);
+
+//expects accessToken, blogId, and action,
+//toggles likes and dislikes, returns blog
+router.put(
+    '/toggleReaction/:id',
+    accessTokenValidator,
+    mongoIdValidator,
+    toggleReaction
+);
+
+//comments router starts here XXXXXXXXXXX
+
+// Create comment on blog
+// expects accessToken, blogId, 
+router.post(
+    '/:id/comments',
+    accessTokenValidator,
+    mongoIdValidator,
+    commentValidator,
+    createComment
+);
+
+// Get comments on blog
+router.get(
+    '/:blogId/comments',
+    accessTokenValidator,
+    mongoIdValidator,
+    getComments
+);
+
+// Update comment or reply
+router.put(
+    '/comments/:commentId',
+    accessTokenValidator,
+    mongoIdValidator,
+    commentValidator,
+    updateComment
+);
+
+// Delete comment or reply
+router.delete(
+    '/comments/:commentId',
+    accessTokenValidator,
+    mongoIdValidator,
+    deleteComment
+);
+
+// Like or dislike comment or reply
+router.put(
+    '/comments/:commentId/reactions',
+    accessTokenValidator,
+    mongoIdValidator,
+    toggleReaction
+);
+
+// Create a reply to a comment
+router.post(
+    '/comments/:commentId/replies',
+    accessTokenValidator,
+    mongoIdValidator,
+    commentValidator,
+    createReply
+);
+
+// Get replies to a comment
+router.get(
+    '/comments/:commentId/replies',
+    accessTokenValidator,
+    mongoIdValidator,
+    getReplies
 );
 
 export default router;

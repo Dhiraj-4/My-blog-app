@@ -1,7 +1,7 @@
 import express from 'express';
 import { createUser, deleteLogin, deleteUser, delProfileImg, emailVerifyOtp, 
     forgetPassword, getAllUsers,getUserById, loginUser, otpVerification, preSignedUrl, 
-    resetPassword,saveProfileImg, updateLogin, updateUser, verifyEmail 
+    resetPassword,saveProfileImg, toggleFollow, updateLogin, updateUser, verifyEmail 
     } from '../../controllers/usersController.js';
 import { registerSchema } from '../../validators/emailPasswordValidators/zodEmailPasswordSchema.js';
 import { emailPasswordValidate } from '../../validators/emailPasswordValidators/zodEmailPasswordValidator.js';
@@ -16,6 +16,7 @@ import { isFileUrlValid } from '../../validators/isFileUrlValid.js';
 import { updateAccessTokenValidator } from '../../validators/tokenValidators/updateAccessTokenValidator.js';
 import { newEmailPasswordSchema } from '../../validators/emailPasswordValidators/newEmailPasswordSchema.js';
 import { deleteTokenValidator } from './../../validators/tokenValidators/deleteTokenValidator.js';
+import { mongoIdValidator } from './../../validators/mongoIdvalidator/mongoIdValidator.js';
 
 const router = express.Router();
 
@@ -25,7 +26,7 @@ router.get('/email-verify', emailPasswordValidate(zodEmailSchema), verifyEmail);
 //expects email and otp, verifies the otp and returns emailAccessToken, cleared
 router.put('/email-verify-otp', emailPasswordValidate(zodEmailSchema), emailVerifyOtp);
 
-//expects email, password and emailAccessToken for signing up, cleared
+//expects email, password, userName and emailAccessToken for signing up, cleared
 router.post(
     '/signup', 
     emailAccessTokenValidator, 
@@ -93,7 +94,7 @@ router.post(
     updateLogin
 );
 
-//expects newEmail, newPassword and updateAccessToken,
+//expects newEmail, newPassword,newUserName and updateAccessToken,
 //updates the user with given details, cleared
 router.put(
     '/users/updateUser',
@@ -119,6 +120,17 @@ router.delete(
     '/delUser',
     deleteTokenValidator,
     deleteUser
-) 
+);
+
+//expects accessToken=>userId, otherUserId=> to be followed
+//toggles otherUser in users following list, return user.follow
+router.post(
+    '/follow/:id',
+    accessTokenValidator,
+    mongoIdValidator,
+    toggleFollow
+);
+
+
 
 export default router;

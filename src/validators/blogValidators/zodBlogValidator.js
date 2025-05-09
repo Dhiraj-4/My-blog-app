@@ -4,7 +4,8 @@ export const zodBlogValidator =(schema) => {
             schema.parse({ 
                 title: req.body.title, 
                 content: req.body.content,
-                authorName: req.body.authorName
+                authorName: req.body.authorName,
+                tags: req.body.tags
             });
             next();
         } catch (error) {

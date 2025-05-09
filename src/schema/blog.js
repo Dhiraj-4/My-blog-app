@@ -6,8 +6,22 @@ const blogSchema = new mongoose.Schema({
     coverImage: { type: String, default: null},
     author: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Users',
         required: true
+    },
+    tags : {
+        type: [String],
+        required: true
+    },
+    likes: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Users',
+        default: []
+    },
+    dislikes: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Users',
+        default: []
     },
     authorName: { type: String, required: true },
     createdAt: {
@@ -16,4 +30,4 @@ const blogSchema = new mongoose.Schema({
     }
 });
 
-export const Blog = new mongoose.model('Blog', blogSchema);
+export const Blog = new mongoose.model('Blogs', blogSchema);

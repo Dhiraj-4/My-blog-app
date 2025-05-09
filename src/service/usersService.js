@@ -14,12 +14,22 @@ import {
     updateUser as updateUserRepository,
     deleteLogin as deleteLoginRepository,
     deleteUser as deleteUserRepository,
-    delProfileImg as delProfileImgRepository
+    delProfileImg as delProfileImgRepository,
+    toggleFollow as toggleFollowRepository
 } from '../repository/usersRepository.js';
+import filter from 'leo-profanity';
 
-export const createUser = async ({ email, password, userEmail }) => {
+export const createUser = async ({ email, password, userEmail, userName }) => {
     try {
-        const response = await createUserRepository({ email, password, userEmail });
+
+        if(filter.check(userName)) {
+            throw {
+                message: 'No bad language',
+                success: false,
+                status: 400
+            }
+        }
+        const response = await createUserRepository({ email, password, userEmail, userName });
 
         return response;
     } catch (error) {
@@ -90,8 +100,8 @@ export const updateLogin = async ({ email, password }) => {
     return updateAccessToken;
 }
 
-export const updateUser = async ({ newEmail, newPassword, userId }) => {
-    const user = await updateUserRepository({ newEmail, newPassword, userId });
+export const updateUser = async ({ newEmail, newPassword, userId, newUserName }) => {
+    const user = await updateUserRepository({ newEmail, newPassword, userId, newUserName });
     return user;
 }
 
@@ -108,4 +118,9 @@ export const deleteUser = async ({ userId }) => {
 export const delProfileImg = async ({ userId }) => {
     const user = await delProfileImgRepository({ userId });
     return user;
+}
+
+export const toggleFollow = async({ userId, followUserId }) => {
+    const followList = await toggleFollowRepository({ userId, followUserId });
+    return followList;
 }

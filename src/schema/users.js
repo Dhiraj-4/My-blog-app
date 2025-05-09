@@ -7,6 +7,17 @@ const usersSchema = mongoose.Schema({
         required: true,
         index: true
     },
+    userName: {
+        type: String,
+        unique: true,
+        required: true,
+        index: true
+    },
+    following: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Users',
+        default: []
+    },
     password: {
         type: String,
         required: true
@@ -26,4 +37,4 @@ const usersSchema = mongoose.Schema({
 }, { timestamps: true });
 
 
-export const Users = mongoose.model('users', usersSchema);
+export const Users = mongoose.model('Users', usersSchema);

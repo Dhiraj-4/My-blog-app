@@ -2,9 +2,9 @@ import { AWS_BUCKET_NAME, AWS_REGION } from "../config/serverConfig.js";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { Blog } from "../schema/blog.js";
 
-export const createBlog = async ({ title, content, authorName, author }) => {
+export const createBlog = async ({ title, content, authorName, author, tags }) => {
     try {
-        const blog = await Blog.create({ title, content, authorName, author });
+        const blog = await Blog.create({ title, content, authorName, author, tags });
         return blog;
     } catch (error) {
         console.log("Error creating blog", error);
@@ -163,7 +163,7 @@ export const getBlogById = async (blogId) => {
     }
 }
 
-export const updateBlogById = async ({ blogId, title, content, authorName, authorId }) => {
+export const updateBlogById = async ({ blogId, title, content, authorName, authorId, tags }) => {
     try {
         const blog = await Blog.findById(blogId);
         
@@ -183,7 +183,11 @@ export const updateBlogById = async ({ blogId, title, content, authorName, autho
             }
         }
 
-        const updateblog = await Blog.findByIdAndUpdate(blogId, { title, content, authorName }, { new: true});
+        const updateblog = await Blog.findByIdAndUpdate(
+            blogId, 
+            { title, content, authorName, tags }, 
+            { new: true});
+            
         return updateblog;
     } catch (error) {
         console.log('This is udateBlogById error: ', error);
@@ -200,3 +204,47 @@ export const getUsersBlogs = async ({ userId }) => {
         throw error;
     }
 }
+
+export const toggleReaction = async ({ userId, blogId, action }) => {
+    try {
+      const blog = await Blog.findById(blogId);
+      if (!blog) {
+        throw {
+          message: 'Blog not found',
+          success: false,
+          status: 404
+        };
+      }
+  
+      const hasLiked = blog.likes.includes(userId);
+      const hasDisliked = blog.dislikes.includes(userId);
+  
+      if (action === 'like') {
+        if (hasLiked) {
+          blog.likes.pull(userId);
+        } else {
+          blog.likes.push(userId);
+          if (hasDisliked) blog.dislikes.pull(userId);
+        }
+      } else if (action === 'dislike') {
+        if (hasDisliked) {
+          blog.dislikes.pull(userId);
+        } else {
+          blog.dislikes.push(userId);
+          if (hasLiked) blog.likes.pull(userId);
+        }
+      } else {
+        throw {
+          message: 'Invalid action',
+          success: false,
+          status: 400
+        };
+      }
+  
+      await blog.save();
+      return blog;
+    } catch (error) {
+      console.log('This error is from toggleReaction: ', error);
+      throw error;
+    }
+  };  
