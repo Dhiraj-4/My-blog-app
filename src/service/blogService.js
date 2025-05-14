@@ -7,7 +7,8 @@ import {
     saveCoverImage as saveCoverImageRepository,
     deleteBlogById as deleteBlogByIdRepository,
     deleteCoverImage as deleteCoverImageRepository,
-    toggleReaction as toggleReactionRepository
+    toggleReaction as toggleReactionRepository,
+    toggleList as toggleListRepository
 } from '../repository/blogRepository.js';
 import { checkProfanity } from '../utils/blogProfanity.js';
 
@@ -67,12 +68,17 @@ export const updateBlogById = async ({ blogId, title, content, authorName, autho
     return blog;
 }
 
-export const getUsersBlogs = async ({ userId }) => {
-    const blogs = await getUsersBlogsRepository({ userId });
+export const getUsersBlogs = async (userId) => {
+    const blogs = await getUsersBlogsRepository(userId);
     return blogs;
 }
 
 export const toggleReaction = async ({ userId, blogId, action }) => {
     const blog = await toggleReactionRepository({ userId, blogId, action });
     return blog;
+}
+
+export const toggleList = async({ userId, blogId }) => {
+    const favouriteList = await toggleListRepository({ userId, blogId });
+    return favouriteList;
 }

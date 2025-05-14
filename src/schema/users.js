@@ -18,6 +18,11 @@ const usersSchema = mongoose.Schema({
         ref: 'Users',
         default: []
     },
+    favouriteList: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Blogs',
+        default: []
+    },
     password: {
         type: String,
         required: true
@@ -25,6 +30,10 @@ const usersSchema = mongoose.Schema({
     profileImg: {
         type: String,
         default: null
+    },
+    bio: {
+        type: String,
+        default: ''
     },
     otp: {
         type: String,

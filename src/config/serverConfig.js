@@ -2,7 +2,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const PORT = process.env.PORT;
+export const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    connectDB();
+    console.log(`Server is up on ${PORT}`);
+});
 
 export const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 

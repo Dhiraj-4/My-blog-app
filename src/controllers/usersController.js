@@ -25,7 +25,8 @@ export const createUser = async (req, res) => {
             email: req.body.email.trim().toLowerCase(),
             password: req.body.password.trim(),
             userEmail: req.user.email,
-            userName: req.body.userName.trim().toLowerCase()
+            userName: req.body.userName.trim().toLowerCase(),
+            bio: req.body.bio.trim().toLowerCase()
         });
 
         return successResponse({
@@ -85,7 +86,17 @@ export const getAllUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
     try {
-        const user = await getUserByIdService(req.user.userId);
+        let user;
+        if(req.body.action.trim().toLowerCase() === 'self') {
+            user = await getUserByIdService(req.user.userId);
+        } else if(req.body.action.trim().toLowerCase() === 'other') {
+            user = await getUserByIdService(req.params.id);
+        } else {
+            return res.status(400).json({
+                message: 'Invalid action',
+                success: false
+            });
+        }
 
         return successResponse({
             message: 'Fetched user successfully',
@@ -252,7 +263,8 @@ export const updateUser = async (req, res) => {
             newEmail: req.body.newEmail.trim().toLowerCase(),
             newPassword: req.body.newPassword.trim(),
             newUserName: req.body.newUserName.trim().toLowerCase(),
-            userId: req.user.userId
+            userId: req.user.userId,
+            bio: req.body.bio.trim().toLowerCase()
         });
 
         return successResponse({

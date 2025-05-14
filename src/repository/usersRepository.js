@@ -15,11 +15,12 @@ import {
 import { S3Client, PutObjectCommand, DeleteObjectsCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import crypto from 'crypto';
-import { transporter } from "../config/mailerconfig.js";
+import { transporter } from "../config/mailerConfig.js";
 import { emailVerification } from './../schema/emailVerification.js';
 import { Blog } from './../schema/blog.js';
+import { Comments } from './../schema/comments.js'
 
-export const createUser = async ({ email, password, userEmail, userName }) => {
+export const createUser = async ({ email, password, userEmail, userName, bio }) => {
     try {
         if(userEmail !== email) {
             throw {
@@ -29,13 +30,14 @@ export const createUser = async ({ email, password, userEmail, userName }) => {
             }
         }
         const hashPassword = await bcrypt.hash(password, 12);
-        const response = await Users.create({ email: userEmail , password: hashPassword, userName});
+        const response = await Users.create({ email: userEmail , password: hashPassword, userName, bio });
 
         const updateResponse = {
             _id: response._id,
             email: response.email,
             userName: response.userName,
-            profileImg: response.profileImg
+            profileImg: response.profileImg,
+            bio: response.bio
         }
         return updateResponse;
     } catch (error) {
@@ -110,7 +112,8 @@ export const getAllUsers = async () => {
             _id: e._id,
             email: e.email,
             userName: e.userName,
-            profileImg: e.profileImg
+            profileImg: e.profileImg,
+            bio: e.bio
         }));
         return updatedUsers;
     } catch (error) {
@@ -133,7 +136,8 @@ export const getUserById = async (userId) => {
             _id: user._id,
             email: user.email,
             userName: user.userName,
-            profileImg: user.profileImg
+            profileImg: user.profileImg,
+            bio: user.bio
         }
         return updatedUser;
     } catch (error) {
@@ -207,7 +211,8 @@ export const forgetPassword = async({ email }) => {
             _id: newUser._id,
             email: newUser.email,
             userName: newUser.userName,
-            profileImg: newUser.profileImg
+            profileImg: newUser.profileImg,
+            bio: newUser.bio
         }
         //return => OTP send successfully
         return updatedUser;
@@ -274,7 +279,8 @@ export const otpVerification = async ({ otp, email }) => {
             _id: updatedUser._id,
             email: updatedUser.email,
             userName: updatedUser.userName,
-            profileImg: updatedUser.profileImg
+            profileImg: updatedUser.profileImg,
+            bio: updatedUser.bio
         }
         return { otpAccessToken, newUser };
     } catch (error) {
@@ -292,7 +298,8 @@ export const resetPassword = async ({ newPassword, userId }) => {
             _id: user._id,
             email: user.email,
             userName: user.userName,
-            profileImg: user.profileImg
+            profileImg: user.profileImg,
+            bio: user.bio
         }
         return newUser;
     } catch (error) {
@@ -455,7 +462,8 @@ export const saveProfileImg = async ({ fileUrl, userId }) => {
         const newUser = {
             _id: user._id,
             email: user.email,
-            profileImg: user.profileImg
+            profileImg: user.profileImg,
+            bio: user.bio
         }
         return newUser;
     } catch (error) {
@@ -502,19 +510,21 @@ export const updateLogin = async ({ email, password }) => {
     }
 }
 
-export const updateUser = async ({ newEmail, newPassword, userId, newUserName }) => {
+export const updateUser = async ({ newEmail, newPassword, userId, newUserName, bio }) => {
     try {
         const hashPassword = await bcrypt.hash(newPassword, 12);
         const user = await Users.findByIdAndUpdate(userId, { 
             email: newEmail, 
             password: hashPassword, 
-            userName: newUserName 
+            userName: newUserName,
+            bio 
         }, { new: true });
         const newUser = {
             _id: user._id,
             email: user.email,
             userName: user.userName,
-            profileImg: user.profileImg
+            profileImg: user.profileImg,
+            bio: user.bio
         }
         return newUser;
     } catch (error) {
@@ -599,6 +609,7 @@ export const deleteUser = async ({ userId }) => {
         // Delete all blogs
         await Promise.all(blogs.map(blog => Blog.findByIdAndDelete(blog._id)));
 
+        
         // Fetch user
         const user = await Users.findById(userId);
         if (!user) {
@@ -608,6 +619,30 @@ export const deleteUser = async ({ userId }) => {
                 status: 404
             };
         }
+
+        //Delete all comments
+        const comments = await Comments.find({ userId });
+
+        // const parentComments = comments.filter(comment => comment.parentId == null);
+
+        // const parentIds = parentComments.map(comment => comment._id);
+
+        // await Comments.deleteMany({ parentId: { $in: parentIds }});
+
+        // await Comments.deleteMany({ userId });
+
+        //learned something new
+        const parentIds = comments
+        .filter(comment => comment.parentId == null)
+        .map(comment => comment._id);
+
+        //new part
+        await Comments.deleteMany({
+            $or: [
+                { userId },
+                { parentId: { $in: parentIds }}
+            ]
+        });
 
         // Delete profile image if exists
         if (user.profileImg) {
@@ -664,7 +699,8 @@ export const delProfileImg = async ({ userId }) => {
                 _id: updatedUser._id,
                 email: updatedUser.email,
                 userName: updatedUser.userName,
-                profileImg: updatedUser.profileImg
+                profileImg: updatedUser.profileImg,
+                bio: updatedUser.bio
             }
             return newUser;
         } else {

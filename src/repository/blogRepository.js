@@ -1,6 +1,7 @@
 import { AWS_BUCKET_NAME, AWS_REGION } from "../config/serverConfig.js";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { Blog } from "../schema/blog.js";
+import { Users } from "../schema/users.js"
 
 export const createBlog = async ({ title, content, authorName, author, tags }) => {
     try {
@@ -195,7 +196,7 @@ export const updateBlogById = async ({ blogId, title, content, authorName, autho
     }
 }
 
-export const getUsersBlogs = async ({ userId }) => {
+export const getUsersBlogs = async (userId) => {
     try {
         const blogs = Blog.find({ author: { $eq: userId }});
         return blogs || [];
@@ -247,4 +248,24 @@ export const toggleReaction = async ({ userId, blogId, action }) => {
       console.log('This error is from toggleReaction: ', error);
       throw error;
     }
-  };  
+  };
+
+export const toggleList = async({ userId, blogId }) => {
+    try {
+        const user = await Users.findById(userId);
+
+        const isListed = user.favouriteList.includes(blogId);
+
+        if(isListed) {
+            user.favouriteList.pull(blogId);
+        } else {
+            user.favouriteList.push(blogId);
+        }
+        await user.save();
+
+        return user.favouriteList;
+    } catch (error) {
+        console.log('This error is from toggleList: ', error);
+        throw error;
+    }
+}

@@ -7,7 +7,8 @@ import {
     deleteBlogById as deleteBlogByIdService,
     saveCoverImage as saveCoverImageService,
     deleteCoverImage as deleteCoverImageService,
-    toggleReaction as toggleReactionService
+    toggleReaction as toggleReactionService,
+    toggleList as toggleListService
 } from '../service/blogService.js'
 import { errorResponse, successResponse } from "../utils/response.js";
 
@@ -92,7 +93,17 @@ export const updateBlogById = async (req, res) => {
 
 export const getUsersBlogs = async (req, res) => {
     try {
-        const blogs = await getUsersBlogsService({ userId: req.user.userId });
+        let blogs;
+        if(req.body.action.trim().toLowerCase() === 'self') {
+            blogs = await getUsersBlogsService(req.user.userId);
+        } else if(req.body.action.trim().toLowerCase() === 'other'){
+            blogs = await getUsersBlogsService(req.params.id );
+        } else {
+            return res.status(400).json({
+                message: 'Invalid action',
+                success: false
+            });
+        }
 
         return successResponse({
             message: "Fetched all user's blogs successfully",
@@ -178,6 +189,25 @@ export const toggleReaction = async(req, res) => {
             res: res,
             status: 200,
             data: blog
+        });
+    } catch (error) {
+        return errorResponse({ error, res });
+    }
+}
+
+export const toggleList = async(req, res) => {
+    try {
+        const favouriteList = await toggleListService({
+            userId: req.user.userId,
+            blogId: req.params.id
+        });
+
+        return successResponse({
+            message: 'Toggled favouriteList successfully',
+            success: true,
+            res: res,
+            status: 200,
+            data: favouriteList
         });
     } catch (error) {
         return errorResponse({ error, res });

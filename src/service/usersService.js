@@ -19,7 +19,7 @@ import {
 } from '../repository/usersRepository.js';
 import filter from 'leo-profanity';
 
-export const createUser = async ({ email, password, userEmail, userName }) => {
+export const createUser = async ({ email, password, userEmail, userName, bio }) => {
     try {
 
         if(filter.check(userName)) {
@@ -29,7 +29,9 @@ export const createUser = async ({ email, password, userEmail, userName }) => {
                 status: 400
             }
         }
-        const response = await createUserRepository({ email, password, userEmail, userName });
+        const cleanBio = filter.clean(bio);
+        
+        const response = await createUserRepository({ email, password, userEmail, userName, bio: cleanBio });
 
         return response;
     } catch (error) {
@@ -101,7 +103,16 @@ export const updateLogin = async ({ email, password }) => {
 }
 
 export const updateUser = async ({ newEmail, newPassword, userId, newUserName }) => {
-    const user = await updateUserRepository({ newEmail, newPassword, userId, newUserName });
+
+    if(filter.check(newUserName)) {
+        throw {
+            message: 'No bad language',
+            success: false,
+            status: 400
+        } 
+    }
+    const cleanBio = filter.check(bio);
+    const user = await updateUserRepository({ newEmail, newPassword, userId, newUserName, bio: cleanBio });
     return user;
 }
 

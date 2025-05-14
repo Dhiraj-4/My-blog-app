@@ -26,7 +26,7 @@ router.get('/email-verify', emailPasswordValidate(zodEmailSchema), verifyEmail);
 //expects email and otp, verifies the otp and returns emailAccessToken, cleared
 router.put('/email-verify-otp', emailPasswordValidate(zodEmailSchema), emailVerifyOtp);
 
-//expects email, password, userName and emailAccessToken for signing up, cleared
+//expects email, password, userName, bio(optional) and emailAccessToken for signing up, cleared
 router.post(
     '/signup', 
     emailAccessTokenValidator, 
@@ -103,8 +103,16 @@ router.put(
     updateUser
 );
 
-//expects accessToken, for user, cleared
+//expects accessToken and action => 'self', for user, cleared
 router.get('/users/me', accessTokenValidator, getUserById);
+
+//expects accessToken, action => 'other' and the user's id who's info you want
+router.get(
+    '/:id',
+    accessTokenValidator,
+    mongoIdValidator,
+    getUserById
+)
 
 //expects accessToken, email and password to verify user, returns deleteToken
 router.post(

@@ -6,7 +6,8 @@ export const emailPasswordValidate = (schema) => {
                 password: req.body.password , 
                 newPassword: req.body.newPassword,
                 newEmail: req.body.newEmail,
-                userName: req.body.userName
+                userName: req.body.userName,
+                bio: req.body.bio
             });
             next();
         } catch (error) {

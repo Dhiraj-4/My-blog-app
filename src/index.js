@@ -27,7 +27,5 @@ app.all('*', (req, res) => {
     })
 })
 
-app.listen(PORT, () => {
-    connectDB();
-    console.log(`Server is up on ${PORT}`);
-})
+
+export default app;

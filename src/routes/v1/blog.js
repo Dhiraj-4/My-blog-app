@@ -1,9 +1,9 @@
-import express from 'express';
+
 import { accessTokenValidator } from '../../validators/tokenValidators/accessTokenValidator.js';
 import { blogZodSchema } from '../../validators/blogValidators/blogZodSchema.js';
 import { zodBlogValidator } from '../../validators/blogValidators/zodBlogValidator.js';
 import { createBlog, deleteBlogById, deleteCoverImage, getAllBlogs, getBlogById,
-     getUsersBlogs, saveCoverImage, toggleReaction, updateBlogById, 
+     getUsersBlogs, saveCoverImage, toggleList, toggleReaction, updateBlogById, 
 } from '../../controllers/blogController.js';
 import { mongoIdValidator } from '../../validators/mongoIdvalidator/mongoIdValidator.js';
 import { fileTypeValidator } from '../../validators/fileTypeValidator.js';
@@ -17,9 +17,16 @@ const router = express.Router();
 //expects nothing, returns all Blogs, cleared
 router.get('/', getAllBlogs);
 
-//expects accessToken(for access and authorId), returns all author's blogs, cleared
+//expects accessToken(for access and authorId), action => 'self' , returns all author's blogs, cleared
 router.get('/users', accessTokenValidator, getUsersBlogs);
 
+//expects accessToken, action=> 'other', returns all blog's of that user
+router.get(
+    '/users/:id',
+    accessTokenValidator,
+    mongoIdValidator,
+    getUsersBlogs
+)
 //expects blogId and accessToken, returns blog, cleared
 router.get(
     '/:id', 
@@ -152,6 +159,14 @@ router.get(
     accessTokenValidator,
     mongoIdValidator,
     getReplies
+);
+
+//toggles the blogId in favourite list
+router.put(
+    '/toggleList/:id',
+    accessTokenValidator,
+    mongoIdValidator,
+    toggleList
 );
 
 export default router;
