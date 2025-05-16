@@ -8,7 +8,10 @@ import {
     deleteBlogById as deleteBlogByIdRepository,
     deleteCoverImage as deleteCoverImageRepository,
     toggleReaction as toggleReactionRepository,
-    toggleList as toggleListRepository
+    toggleList as toggleListRepository,
+    getUserFeed as getUserFeedRepository,
+    getTrendingBlogs as getTrendingBlogsRepository,
+    getFavList as getFavListRepository
 } from '../repository/blogRepository.js';
 import { checkProfanity } from '../utils/blogProfanity.js';
 
@@ -74,11 +77,26 @@ export const getUsersBlogs = async (userId) => {
 }
 
 export const toggleReaction = async ({ userId, blogId, action }) => {
-    const blog = await toggleReactionRepository({ userId, blogId, action });
-    return blog;
+    const blogReaction = await toggleReactionRepository({ userId, blogId, action });
+    return blogReaction;
 }
 
 export const toggleList = async({ userId, blogId }) => {
     const favouriteList = await toggleListRepository({ userId, blogId });
     return favouriteList;
 }
+
+export const getUserFeed = async(userId) => {
+    const blogs = await getUserFeedRepository(userId);
+    return blogs;
+}
+
+export const getTrendingBlogs = async() => {
+    const trendingBlogs = await getTrendingBlogsRepository();
+    return trendingBlogs;
+}
+
+export const getFavList = async(userId) => {
+    const favBlogs = getFavListRepository(userId);
+    return favBlogs
+} 

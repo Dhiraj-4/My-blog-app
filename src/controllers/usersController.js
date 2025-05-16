@@ -15,7 +15,7 @@ import {
     deleteLogin as deleteLoginService,
     deleteUser as deleteUserService,
     delProfileImg as delProfileImgService,
-    toggleFollow as toggleFollowService
+    toggleFollow as toggleFollowService,
 } from '../service/usersService.js';
 import { errorResponse, successResponse } from '../utils/response.js';
 

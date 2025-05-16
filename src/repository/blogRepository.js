@@ -217,22 +217,26 @@ export const toggleReaction = async ({ userId, blogId, action }) => {
         };
       }
   
-      const hasLiked = blog.likes.includes(userId);
-      const hasDisliked = blog.dislikes.includes(userId);
+      const hasLiked = blog.likes.some(id => id.toString() === userId.toString());
+      const hasDisliked = blog.dislikes.includes(id => id.toString() === userId.toString());
   
       if (action === 'like') {
         if (hasLiked) {
           blog.likes.pull(userId);
+          blog.likesCount--;
         } else {
           blog.likes.push(userId);
-          if (hasDisliked) blog.dislikes.pull(userId);
+          blog.likesCount++;
+          if (hasDisliked) {blog.dislikes.pull(userId); blog.dislikesCount--;}
         }
       } else if (action === 'dislike') {
         if (hasDisliked) {
           blog.dislikes.pull(userId);
+          blog.dislikesCount--;
         } else {
           blog.dislikes.push(userId);
-          if (hasLiked) blog.likes.pull(userId);
+          blog.dislikesCount++;
+          if (hasLiked) {blog.likes.pull(userId); blog.likesCount--;}
         }
       } else {
         throw {
@@ -241,9 +245,17 @@ export const toggleReaction = async ({ userId, blogId, action }) => {
           status: 400
         };
       }
+
+      blog.likesCount = Math.max(blog.likesCount, 0);
+      blog.dislikesCount = Math.max(blog.dislikesCount, 0);
   
       await blog.save();
-      return blog;
+      return {
+      likesCount: blog.likesCount,
+      dislikesCount: blog.dislikesCount,
+      liked: blog.likes.some(id => id.toString() === userId),
+      disliked: blog.dislikes.some(id => id.toString() === userId),
+      };
     } catch (error) {
       console.log('This error is from toggleReaction: ', error);
       throw error;
@@ -266,6 +278,76 @@ export const toggleList = async({ userId, blogId }) => {
         return user.favouriteList;
     } catch (error) {
         console.log('This error is from toggleList: ', error);
+        throw error;
+    }
+}
+
+export const getUserFeed = async(userId) => {
+    try {
+        const user = await Users.findById(userId).select('following');
+        const followingId = user.following;
+
+        const blogs = await Blog.find({ author: { $in: followingId }})
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .populate('author', 'userName profileImg')
+            .exec();
+
+        return blogs;
+    } catch (error) {
+        console.log('This error is from getUserFeed: ', error);
+        throw error;
+    }
+}
+
+export const getTrendingBlogs = async() => {
+    try {
+        const trendingBlogs = await Blog.aggregate([
+            {
+                $addFields: {
+                    trendingScore: {
+                        $divide: [
+                            {
+                                $add: [
+                                    { $subtract: [ "$likesCount", "$dislikesCount" ] },
+                                    { $multiply: [ "$commentsCount", 2 ] }
+                                ]
+                            },
+                            {
+                                $add: [
+                                    {
+                                        $divide: [
+                                            { $subtract: [ Date.now(), "$createdAt" ] },
+                                            1000 * 60 * 60
+                                        ]
+                                    },
+                                    1
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            { $sort: { trendingScore: -1 } },
+            { limit: 10 }
+        ]);
+
+    return trendingBlogs;
+    } catch (error) {
+        console.log('This error is from getTrendingBlogs: ', error);
+        throw error;
+    }
+}
+
+export const getFavList = async(userId) => {
+    try {
+        const favBlogs = await Users.findById(userId)
+        .select('favouriteList')
+        .populate('favouriteList');
+
+        return favBlogs;
+    } catch (error) {
+        console.log('This error is from getFavList: ', error);
         throw error;
     }
 }

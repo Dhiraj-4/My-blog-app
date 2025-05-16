@@ -3,6 +3,8 @@ import { accessTokenValidator } from '../../validators/tokenValidators/accessTok
 import { blogZodSchema } from '../../validators/blogValidators/blogZodSchema.js';
 import { zodBlogValidator } from '../../validators/blogValidators/zodBlogValidator.js';
 import { createBlog, deleteBlogById, deleteCoverImage, getAllBlogs, getBlogById,
+     getFavList,
+     getTrendingBlogs,
      getUsersBlogs, saveCoverImage, toggleList, toggleReaction, updateBlogById, 
 } from '../../controllers/blogController.js';
 import { mongoIdValidator } from '../../validators/mongoIdvalidator/mongoIdValidator.js';
@@ -10,12 +12,19 @@ import { fileTypeValidator } from '../../validators/fileTypeValidator.js';
 import { preSignedUrl } from '../../controllers/usersController.js';
 import { isFileUrlValid } from '../../validators/isFileUrlValid.js';
 import { commentValidator } from './../../validators/commentValidator/commentValidator.js';
-import { createComment, createReply, deleteComment, getComments, getReplies, updateComment } from './../../controllers/commentController.js';
+import { createComment, createReply, deleteComment, getComments, getReplies, updateComment, toggleReaction as toggleReactionComment } from './../../controllers/commentController.js';
 
 const router = express.Router();
 
 //expects nothing, returns all Blogs, cleared
 router.get('/', getAllBlogs);
+
+//expects accessToken(userId), returns blogs from users that userId follow
+router.get(
+    '/feed',
+    accessTokenValidator,
+    getUserFeed
+);
 
 //expects accessToken(for access and authorId), action => 'self' , returns all author's blogs, cleared
 router.get('/users', accessTokenValidator, getUsersBlogs);
@@ -99,6 +108,28 @@ router.put(
     toggleReaction
 );
 
+//expects accessToken and returns top 10 trending blogs
+router.get(
+    '/trending',
+    accessTokenValidator,
+    getTrendingBlogs
+);
+
+//toggles the blogId in favourite list
+router.put(
+    '/toggleList/:id',
+    accessTokenValidator,
+    mongoIdValidator,
+    toggleList
+);
+
+//expects accessToken, gets user's favouriteList blogs
+router.get(
+    '/favList',
+    accessTokenValidator,
+    getFavList
+)
+
 //comments router starts here XXXXXXXXXXX
 
 // Create comment on blog
@@ -121,7 +152,7 @@ router.get(
 
 // Update comment or reply
 router.put(
-    '/comments/:commentId',
+    '/comments/:id',
     accessTokenValidator,
     mongoIdValidator,
     commentValidator,
@@ -130,7 +161,7 @@ router.put(
 
 // Delete comment or reply
 router.delete(
-    '/comments/:commentId',
+    '/comments/:id',
     accessTokenValidator,
     mongoIdValidator,
     deleteComment
@@ -138,15 +169,15 @@ router.delete(
 
 // Like or dislike comment or reply
 router.put(
-    '/comments/:commentId/reactions',
+    '/comments/:id/reactions',
     accessTokenValidator,
     mongoIdValidator,
-    toggleReaction
+    toggleReactionComment
 );
 
 // Create a reply to a comment
 router.post(
-    '/comments/:commentId/replies',
+    '/comments/:id/replies',
     accessTokenValidator,
     mongoIdValidator,
     commentValidator,
@@ -155,18 +186,10 @@ router.post(
 
 // Get replies to a comment
 router.get(
-    '/comments/:commentId/replies',
+    '/comments/:id/replies',
     accessTokenValidator,
     mongoIdValidator,
     getReplies
-);
-
-//toggles the blogId in favourite list
-router.put(
-    '/toggleList/:id',
-    accessTokenValidator,
-    mongoIdValidator,
-    toggleList
 );
 
 export default router;

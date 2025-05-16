@@ -1,8 +1,12 @@
+import { Blog } from "../schema/blog.js";
 import { Comments } from "../schema/comments.js"
 
 export const createComment = async({ userId, blogId, text, }) => {
     try {
         const comment = await Comments.create({ userId, blogId, text });
+        const blog = await Blog.findById(blogId).select('commentsCount');
+        blog.commentsCount++;
+        await blog.save();
         return comment;
     } catch (error) {
         console.log('This error is from createComments: ', error);
@@ -75,6 +79,10 @@ export const deleteComment = async({ userId, commentId }) => {
             }
         }
 
+        const blog = await Blog.findById(comment.blogId);
+        blog.commentsCount--;
+        await blog.save();
+
         const deleteComment = await Comments.findByIdAndDelete(commentId);
 
         return deleteComment;
@@ -96,8 +104,8 @@ export const toggleReaction = async({ userId, commentId, action }) => {
             }
         }
 
-        const hasLiked = comment.likes.includes(userId);
-        const hasDisliked = comment.dislikes.includes(userId);
+        const hasLiked = comment.likes.some(id => id.toString() === userId.toString());
+        const hasDisliked = comment.dislikes.some(id => id.toString() === userId.toString());
 
         if(action === 'like') {
             if(hasLiked) {
@@ -123,7 +131,10 @@ export const toggleReaction = async({ userId, commentId, action }) => {
 
         await comment.save();
 
-        return comment;
+        return {
+        liked: comment.likes.some(id => id.toString() === userId),
+        disliked: comment.dislikes.some(id => id.toString() === userId),
+        };
     } catch (error) {
         console.log('This error is from toggleReaction: ', error);
         throw error;

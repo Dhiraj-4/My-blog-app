@@ -1,3 +1,4 @@
+import { response } from 'express';
 import {
     createBlog as createBlogService,
     getBlogById as getBlogByIdService,
@@ -8,7 +9,10 @@ import {
     saveCoverImage as saveCoverImageService,
     deleteCoverImage as deleteCoverImageService,
     toggleReaction as toggleReactionService,
-    toggleList as toggleListService
+    toggleList as toggleListService,
+    getUserFeed as getUserFeedService,
+    getTrendingBlogs as getTrendingBlogsService,
+    getFavList as getFavListService
 } from '../service/blogService.js'
 import { errorResponse, successResponse } from "../utils/response.js";
 
@@ -177,10 +181,10 @@ export const deleteCoverImage = async (req, res) => {
 
 export const toggleReaction = async(req, res) => {
     try {
-        const blog = await toggleReactionService({
+        const blogReaction = await toggleReactionService({
             userId: req.user.userId,
             blogId: req.params.id,
-            action: req.body.action
+            action: req.body.action.trim().toLowerCase()
         });
 
         return successResponse({
@@ -188,7 +192,7 @@ export const toggleReaction = async(req, res) => {
             success: true,
             res: res,
             status: 200,
-            data: blog
+            data: blogReaction
         });
     } catch (error) {
         return errorResponse({ error, res });
@@ -208,6 +212,54 @@ export const toggleList = async(req, res) => {
             res: res,
             status: 200,
             data: favouriteList
+        });
+    } catch (error) {
+        return errorResponse({ error, res });
+    }
+}
+
+export const getUserFeed = async(req, res) => {
+    try {
+        const blogs = await getUserFeedService(req.user.userId);
+
+        return successResponse({
+            message: 'Fetched feed successfully',
+            success: true,
+            res: res,
+            status: 200,
+            data: blogs
+        });
+    } catch (error) {
+        return errorResponse({ error, res });
+    }
+}
+
+export const getTrendingBlogs = async(req, res) => {
+    try {
+        const trendingBlogs = await getTrendingBlogsService();
+
+        return successResponse({
+            message: 'Fetched trending blogs successfully',
+            success: true,
+            res: res,
+            status: 200,
+            data: trendingBlogs
+        });
+    } catch (error) {
+        return errorResponse({ error, res });
+    }
+}
+
+export const getFavList = async(req, res) => {
+    try {
+        const favBlogs = await getFavListService(req.user.userId);
+
+        return successResponse({
+            message: 'Fetched favourite blogs successfully',
+            success: true,
+            res: res,
+            status: 200,
+            data: favBlogs
         });
     } catch (error) {
         return errorResponse({ error, res });
