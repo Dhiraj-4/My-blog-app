@@ -12,7 +12,8 @@ import {
     toggleList as toggleListService,
     getUserFeed as getUserFeedService,
     getTrendingBlogs as getTrendingBlogsService,
-    getFavList as getFavListService
+    getFavList as getFavListService,
+    getBlogReactions as getBlogReactionsService
 } from '../service/blogService.js'
 import { errorResponse, successResponse } from "../utils/response.js";
 
@@ -193,6 +194,22 @@ export const toggleReaction = async(req, res) => {
             res: res,
             status: 200,
             data: blogReaction
+        });
+    } catch (error) {
+        return errorResponse({ error, res });
+    }
+}
+
+export const getBlogReactions = async(req, res) => {
+    try {
+        const blogReactions = await getBlogReactionsService(req.params.id);
+        
+        return successResponse({
+            message: 'Fetched reactions successfully',
+            success: true,
+            res: res,
+            status: 200,
+            data: blogReactions
         });
     } catch (error) {
         return errorResponse({ error, res });

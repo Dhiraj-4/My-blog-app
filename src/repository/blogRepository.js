@@ -262,6 +262,18 @@ export const toggleReaction = async ({ userId, blogId, action }) => {
     }
   };
 
+export const getBlogReactions = async(blogId) => {
+    try {
+        const blogReactions = await Blog.findById(blogId)
+        .select('likesCount dislikesCount commentsCount');
+
+        return blogReactions;
+    } catch (error) {
+        console.log('This error is from getBlogReactions: ', error);
+        throw error;
+    }
+}
+
 export const toggleList = async({ userId, blogId }) => {
     try {
         const user = await Users.findById(userId);

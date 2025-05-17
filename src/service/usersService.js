@@ -15,7 +15,9 @@ import {
     deleteLogin as deleteLoginRepository,
     deleteUser as deleteUserRepository,
     delProfileImg as delProfileImgRepository,
-    toggleFollow as toggleFollowRepository
+    toggleFollow as toggleFollowRepository,
+    getFollowersList as getFollowersListRepository,
+    getFollowingList as getFollowingListRepository
 } from '../repository/usersRepository.js';
 import filter from 'leo-profanity';
 
@@ -134,4 +136,14 @@ export const delProfileImg = async ({ userId }) => {
 export const toggleFollow = async({ userId, followUserId }) => {
     const followList = await toggleFollowRepository({ userId, followUserId });
     return followList;
+}
+
+export const getFollowersList = async(userName) => {
+    const followersList = await getFollowersListRepository(userName);
+    return followersList
+}
+
+export const getFollowingList = async(userName) => {
+    const followingList = await getFollowingListRepository(userName);
+    return followingList;
 }

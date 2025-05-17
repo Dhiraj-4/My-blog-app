@@ -745,3 +745,47 @@ export const toggleFollow = async({ userId, followUserId }) => {
         throw error;
     }
 }
+
+export const getFollowersList = async(userName) => {
+    try {
+        const userId = await Users.findOne({ userName })
+        .select('_id');
+
+        if(!userId) {
+            throw {
+                message: 'User not found',
+                success: false,
+                status: 404
+            }
+        }
+
+        const followersList = await Users.find({ following: userId })
+        .select('userName profileImg');
+
+        return followersList;
+    } catch (error) {
+        console.log('This error is from getFollowerList: ', error);
+        throw error;
+    }
+}
+
+export const getFollowingList = async(userName) => {
+    try {
+        const user = await Users.findOne({ userName})
+        .select('following')
+        .populate('following', 'userName profileImg');
+
+        if(!user) {
+            throw {
+                message: 'User not found',
+                success: false,
+                status: 404
+            }
+        }
+
+        return user.following;
+    } catch (error) {
+        console.log('This error is from getFollowingList: ', error);
+        throw error;
+    }
+}

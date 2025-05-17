@@ -3,6 +3,7 @@ import { accessTokenValidator } from '../../validators/tokenValidators/accessTok
 import { blogZodSchema } from '../../validators/blogValidators/blogZodSchema.js';
 import { zodBlogValidator } from '../../validators/blogValidators/zodBlogValidator.js';
 import { createBlog, deleteBlogById, deleteCoverImage, getAllBlogs, getBlogById,
+     getBlogReactions,
      getFavList,
      getTrendingBlogs,
      getUsersBlogs, saveCoverImage, toggleList, toggleReaction, updateBlogById, 
@@ -108,6 +109,14 @@ router.put(
     toggleReaction
 );
 
+//expects accessToken and blogId, returns likesCount and dislikesCount
+router.get(
+    '/reaction/:id',
+    accessTokenValidator,
+    mongoIdValidator,
+    getBlogReactions
+)
+
 //expects accessToken and returns top 10 trending blogs
 router.get(
     '/trending',
@@ -128,7 +137,7 @@ router.get(
     '/favList',
     accessTokenValidator,
     getFavList
-)
+);
 
 //comments router starts here XXXXXXXXXXX
 

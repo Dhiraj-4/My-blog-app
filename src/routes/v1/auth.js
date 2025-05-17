@@ -1,6 +1,6 @@
 import express from 'express';
 import { createUser, deleteLogin, deleteUser, delProfileImg, emailVerifyOtp, 
-    forgetPassword, getAllUsers,getUserById, loginUser, otpVerification, preSignedUrl, 
+    forgetPassword, getAllUsers,getFollowersList,getFollowingList,getUserById, loginUser, otpVerification, preSignedUrl, 
     resetPassword,saveProfileImg, toggleFollow, updateLogin, updateUser, verifyEmail 
     } from '../../controllers/usersController.js';
 import { registerSchema } from '../../validators/emailPasswordValidators/zodEmailPasswordSchema.js';
@@ -138,6 +138,22 @@ router.post(
     mongoIdValidator,
     toggleFollow
 );
+
+//expects accessToken and userName, 
+//returns the users list who follow userName
+router.get(
+    '/followersList/:userName',
+    accessTokenValidator,
+    getFollowersList
+);
+
+//expects accessToken and userName,
+// returns the users list whom which the userName follows
+router.get(
+    '/followingList/:userName',
+    accessTokenValidator,
+    getFollowingList
+)
 
 
 

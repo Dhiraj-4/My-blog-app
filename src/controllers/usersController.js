@@ -16,6 +16,8 @@ import {
     deleteUser as deleteUserService,
     delProfileImg as delProfileImgService,
     toggleFollow as toggleFollowService,
+    getFollowersList as getFollowersListService,
+    getFollowingList as getFollowingListService
 } from '../service/usersService.js';
 import { errorResponse, successResponse } from '../utils/response.js';
 
@@ -349,6 +351,38 @@ export const toggleFollow = async(req, res) => {
             data: { followList }
         });
     } catch (error) {
+        return errorResponse({ error, res });
+    }
+}
+
+export const getFollowersList = async(req, res) => {
+    try {
+        const followersList = await getFollowersListService(req.params.userName);
+
+        return successResponse({
+            message: 'Fetched followers list successfully',
+            success: true,
+            res: res,
+            status: 200,
+            data: followersList
+        });
+    } catch (error) {
+        return errorResponse({ error, res });
+    }
+}
+
+export const getFollowingList = async(req, res) => {
+    try{
+        const followingList = await getFollowingListService(req.params.userName);
+        
+        return successResponse({
+            message: 'Fetched following list successfully',
+            success: true,
+            res: res,
+            status: 200,
+            data: followingList
+        })
+    }catch(error){
         return errorResponse({ error, res });
     }
 }

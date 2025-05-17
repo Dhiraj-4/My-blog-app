@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const blogSchema = new mongoose.Schema({
-    title: { type: String, required: true },
+    title: { type: String, required: true, index: true},
     content: { type: String, required: true },
     coverImage: { type: String, default: null},
     author: {
@@ -11,7 +11,8 @@ const blogSchema = new mongoose.Schema({
     },
     tags : {
         type: [String],
-        required: true
+        required: true,
+        index: true
     },
     likes: [
         {
@@ -37,7 +38,7 @@ const blogSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    authorName: { type: String, required: true },
+    authorName: { type: String, required: true, index: true },
     createdAt: {
         type: Date,
         default: Date.now
